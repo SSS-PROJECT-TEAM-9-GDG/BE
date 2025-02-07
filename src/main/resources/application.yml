@@ -14,6 +14,7 @@ spring:
       hibernate:
         format_sql: false
         use_sql_comments: true
+
 springdoc:
   api-docs:
     enabled: true
@@ -21,8 +22,6 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
-    urls:
-      - url: /v3/api-docs  # 로컬 API 문서 경로
-        name: API Docs
 
-
+api:
+  key: ${API_KEY}
