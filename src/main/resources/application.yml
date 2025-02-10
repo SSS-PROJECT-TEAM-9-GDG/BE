@@ -24,4 +24,6 @@
       path: /swagger-ui.html
 
   api:
-    key: ${API_KEY}
+    spam-check:
+      key: ${API_KEY}
+
