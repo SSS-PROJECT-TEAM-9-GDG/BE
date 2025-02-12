@@ -3,6 +3,8 @@ package com.gdg.sssProject.phonenumbercheck.service;
 import com.gdg.sssProject.phonenumbercheck.dto.SpamNumberRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,43 +16,24 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 public class phoneNumCheckService {
+    private final WebClient webClient;
 
     private static final String API_URL = "https://apick.app/rest/check_spam_number";
     @Value("${api.spam-check.key}")
     private String apiKey;
 
-    public String checkSpamNumber(SpamNumberRequest spamNumberRequest) {
-        try {
-            URL url = new URL(API_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    public phoneNumCheckService(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.baseUrl("https://apick.app/rest").build();
+    }
 
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("CL_AUTH_KEY", apiKey);
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setDoOutput(true);
-
-            String postData = "number=" + spamNumberRequest.number();
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = postData.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            }
-
-            int responseCode = conn.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
-                    StringBuilder response = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        response.append(line);
-                    }
-                    return response.toString();
-                }
-            } else {
-                return "Error: Received HTTP " + responseCode;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "Error: " + e.getMessage();
-        }
+    public Mono<String> checkSpamNumber(SpamNumberRequest spamNumberRequest) {
+        return webClient.post()
+                .uri("/check_spam_number")
+                .header("CL_AUTH_KEY", apiKey)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .bodyValue("number=" + spamNumberRequest.number())
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorReturn("Error: API 요청 실패");
     }
 }

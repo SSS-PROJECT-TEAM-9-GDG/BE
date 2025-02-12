@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.gdg.sssProject.phonenumbercheck.service.phoneNumCheckService;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class phoneNumCheckController {
 
     @PostMapping("/check")
     @Operation(summary = "전화번호 체크 API", description = "전화번호 체크 API입니다.")
-    public String checkSpam(@RequestBody SpamNumberRequest spamNumberRequest) {
+    public Mono<String> checkSpam(@RequestBody SpamNumberRequest spamNumberRequest) {
         return phoneNumCheckService.checkSpamNumber(spamNumberRequest);
     }
 }
