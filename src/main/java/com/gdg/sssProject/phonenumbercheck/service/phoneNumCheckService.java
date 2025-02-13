@@ -6,19 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-
 @Service
 public class phoneNumCheckService {
     private final WebClient webClient;
 
     private static final String API_URL = "https://apick.app/rest/check_spam_number";
+
     @Value("${api.spam-check.key}")
     private String apiKey;
 
