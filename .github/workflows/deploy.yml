@@ -46,13 +46,13 @@ jobs:
       - name: Docker 이미지 생성
         run: docker build -t sss-project:latest .
 
-      - name: Docker 이미지에 Tag 붙이기
-        run: docker tag sss-project:latest ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
-
       - name: ECR에 Docker 이미지 Push하기
         uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
+
+      - name: Docker 이미지 Tag 및 Push
         run: |
+          docker tag sss-project:latest ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
           docker push ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
 
       - name: SSH로 EC2에 접속하기
