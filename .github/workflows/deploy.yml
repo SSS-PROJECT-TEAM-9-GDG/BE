@@ -43,17 +43,18 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      - name: ECR에 로그인하기
+        run: |
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com
+
       - name: Docker 이미지 생성
         run: docker build -t sss-project:latest .
 
-      - name: ECR에 Docker 이미지 Push하기
-        uses: aws-actions/amazon-ecr-login@v2
-        id: login-ecr
+      - name: Docker 이미지에 Tag 붙이기
+        run: docker tag sss-project:latest 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
 
-      - name: Docker 이미지 Tag 및 Push
-        run: |
-          docker tag sss-project:latest ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
+      - name: ECR에 Docker 이미지 Push하기
+        run: docker push 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
 
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
@@ -65,5 +66,5 @@ jobs:
           script: |
             sudo docker stop sss-project || true
             sudo docker rm sss-project || true
-            sudo docker pull ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
-            sudo docker run -d --name sss-project -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
+            sudo docker pull 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
+            sudo docker run -d --name sss-project -p 8080:8080 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
