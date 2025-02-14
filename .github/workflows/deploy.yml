@@ -64,7 +64,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            docker stop sss-project || true
-            docker rm sss-project || true
-            docker pull ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
-            docker run -d --name sss-project -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
+            sudo docker stop sss-project || true
+            sudo docker rm sss-project || true
+            sudo docker pull ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
+            sudo docker run -d --name sss-project -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
