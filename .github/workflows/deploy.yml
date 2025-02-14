@@ -1,4 +1,4 @@
-name: Deploy To EC2
+name: Deploy to EC2
 
 on:
   push:
@@ -9,10 +9,10 @@ on:
       - main
 
 jobs:
-  deploy:
+  Deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Github Repository 파일 불러오기
+      - name: Github Repository에 올린 파일들을 불러오기
         uses: actions/checkout@v4
 
       - name: JDK 17버전 설치
@@ -21,39 +21,36 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Create application.yml
-        run: |
-          pushd ./src/main
-          mkdir -p resources
-          cd resources
-          echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.yml
-          cat application.yml  # 생성된 파일을 출력하여 확인
-          popd
-
-      - name: Gradlew에 실행 권한 부여
-        run: chmod +x ./gradlew
+      - name: APPLICATION_PROPERTIES 파일 생성
+        run: echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
 
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
 
-      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ap-northeast-2
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: 빌드된 파일 이름 변경하기
+        run: mv ./build/libs/*SNAPSHOT.jar ./project.jar
 
-      - name: EC2에 JAR 파일을 업로드하기
-        run: |
-          scp -i ${{ secrets.EC2_PRIVATE_KEY }} build/libs/sss-project-*.jar ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }}:/home/ubuntu/sss-project.jar
-
-      - name: SSH로 EC2에 접속하여 애플리케이션 실행하기
-        uses: appleboy/ssh-action@v1.0.3
+      - name: SCP로 EC2에 빌드된 파일 전송하기
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script_stop: true
+          source: project.jar
+          target: /home/ubuntu/pcy-server/tobe
+
+      - name: SSH로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}         # EC2의 주소
+          username: ${{ secrets.EC2_USERNAME }} # EC2 접속 username
+          key: ${{ secrets.EC2_PRIVATE_KEY }}   # EC2의 Key 파일의 내부 텍스트
+          script_stop: true                     # 아래 script 중 실패하는 명령이 하나라도 있으면 실패로 처리
           script: |
-            # JAR 파일 실행
-            nohup java -jar /home/ubuntu/sss-project.jar > /home/ubuntu/sss-project.log 2>&1 &
+            sudo fuser -k -n tcp 8080 || true
+            rm -rf /home/ubuntu/pcy-server/current
+            mkdir /home/ubuntu/pcy-server/current
+            mv /home/ubuntu/pcy-server/tobe/project.jar /home/ubuntu/pcy-server/current/project.jar
+            cd /home/ubuntu/pcy-server/current
+            nohup java -jar project.jar > ./output.log 2>&1 &
+            rm -rf /home/ubuntu/pcy-server/tobe
