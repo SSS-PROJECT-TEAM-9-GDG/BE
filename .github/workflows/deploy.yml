@@ -43,10 +43,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: ECR에 로그인하기
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
       - name: Docker 이미지 생성
         run: docker build -t sss-project:latest .
 
@@ -54,7 +50,10 @@ jobs:
         run: docker tag sss-project:latest ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
 
       - name: ECR에 Docker 이미지 Push하기
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
+        uses: aws-actions/amazon-ecr-login@v2
+        id: login-ecr
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
 
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
