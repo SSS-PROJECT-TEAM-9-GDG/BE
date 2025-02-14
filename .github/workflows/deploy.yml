@@ -31,6 +31,10 @@ jobs:
           echo "${{ secrets.APPLICATION_PROPERTIES }}" >> application.yml
           popd
 
+      # gradlew에 실행 권한 부여
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
 
