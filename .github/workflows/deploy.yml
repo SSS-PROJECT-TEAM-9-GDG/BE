@@ -21,19 +21,16 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # application.yml 파일을 생성하는 단계 추가
       - name: Create application.yml
         run: |
           pushd ./src/main
           mkdir -p resources
           cd resources
-          touch application.yml
-          echo "${{ secrets.APPLICATION_PROPERTIES }}" >> application.yml
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.yml
           cat application.yml  # 생성된 파일을 출력하여 확인
           popd
 
-      # gradlew에 실행 권한 부여
-      - name: Grant execute permission to gradlew
+      - name: Gradlew에 실행 권한 부여
         run: chmod +x ./gradlew
 
       - name: 테스트 및 빌드하기
