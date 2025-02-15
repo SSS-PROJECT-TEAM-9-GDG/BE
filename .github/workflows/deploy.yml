@@ -43,7 +43,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: ECR에 로그인하기
+      - name: ECR에 로그인
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
