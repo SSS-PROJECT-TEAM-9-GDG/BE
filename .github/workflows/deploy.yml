@@ -64,10 +64,20 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
+            # ECR 로그인
+            aws ecr get-login-password --region ap-northeast-2 | \
+            docker login --username AWS --password-stdin 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com
+
+            # 기존 컨테이너 중지 및 삭제
             sudo docker stop sss-project || true
             sudo docker rm sss-project || true
+
+            # 최신 이미지 가져오기
             sudo docker pull 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
-            sudo docker run -d --name sss-project -p 8080:8080 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
+
+            # 컨테이너 실행
+            sudo docker run -d --name sss-project -p 8080:8080 \
+              418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
 
       - name: 배포 완료 확인
         run: echo "🚀 Deployment completed for feat/cicd/#3!"
