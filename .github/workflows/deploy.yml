@@ -43,23 +43,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # ECR 로그인
       - name: ECR에 로그인하기
-        run: |
-          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      # Docker 이미지 생성 및 태깅
       - name: Docker 이미지 생성
-        run: docker build -t gdgoc .
+        run: docker build -t sss-project:latest .
 
       - name: Docker 이미지에 Tag 붙이기
-        run: docker tag gdgoc 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
+        run: docker tag sss-project:latest ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
 
-      # ECR에 이미지 푸시
       - name: ECR에 Docker 이미지 Push하기
-        run: docker push 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
 
-      # EC2에 SSH로 접속하여 애플리케이션 실행
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -68,14 +64,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            # 기존 애플리케이션 실행 중지 (만약 실행 중이라면)
-            sudo systemctl stop your-app.service || true
-
-            # 최신 애플리케이션 다운로드 
-            aws ecr --region ap-northeast-2 download --repository sss-project --tag latest --output your-app.jar
-
-            # 애플리케이션 실행 (JAR 파일로)
-            nohup java -jar /path/to/your-app.jar &
-
-      - name: 배포 완료 확인
-        run: echo "🚀 Deployment completed for feat/cicd/#3!"
+            docker stop my-new-container || true
+            docker rm my-new-container || true
+            docker pull ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
+            docker run -d --name my-new-container -p 8080:8080 ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
