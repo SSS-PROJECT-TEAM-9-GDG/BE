@@ -1,18 +1,18 @@
-name: Deploy to EC2
+name: Deploy To EC2
 
 on:
   push:
     branches:
-      - main
+      - feat/cicd/#3
   pull_request:
     branches:
-      - main
+      - feat/cicd/#3
 
 jobs:
-  Deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Github Repository에 올린 파일들을 불러오기
+      - name: Github Repository 파일 불러오기
         uses: actions/checkout@v4
 
       - name: JDK 17버전 설치
@@ -21,36 +21,53 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: APPLICATION_PROPERTIES 파일 생성
-        run: echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
+      - name: Create application.yml
+        run: |
+          pushd ./src/main
+          mkdir -p resources
+          cd resources
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.yml
+          cat application.yml  # 생성된 파일을 출력하여 확인
+          popd
+
+      - name: Gradlew에 실행 권한 부여
+        run: chmod +x ./gradlew
 
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
 
-      - name: 빌드된 파일 이름 변경하기
-        run: mv ./build/libs/*SNAPSHOT.jar ./project.jar
-
-      - name: SCP로 EC2에 빌드된 파일 전송하기
-        uses: appleboy/scp-action@v0.1.7
+      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: project.jar
-          target: /home/ubuntu/pcy-server/tobe
+          aws-region: ap-northeast-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: ECR에 로그인하기
+        run: |
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com
+
+      - name: Docker 이미지 생성
+        run: docker build -t sss-project:latest .
+
+      - name: Docker 이미지에 Tag 붙이기
+        run: docker tag sss-project:latest 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
+
+      - name: ECR에 Docker 이미지 Push하기
+        run: docker push 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
 
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}         # EC2의 주소
-          username: ${{ secrets.EC2_USERNAME }} # EC2 접속 username
-          key: ${{ secrets.EC2_PRIVATE_KEY }}   # EC2의 Key 파일의 내부 텍스트
-          script_stop: true                     # 아래 script 중 실패하는 명령이 하나라도 있으면 실패로 처리
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script_stop: true
           script: |
-            sudo fuser -k -n tcp 8080 || true
-            rm -rf /home/ubuntu/pcy-server/current
-            mkdir /home/ubuntu/pcy-server/current
-            mv /home/ubuntu/pcy-server/tobe/project.jar /home/ubuntu/pcy-server/current/project.jar
-            cd /home/ubuntu/pcy-server/current
-            nohup java -jar project.jar > ./output.log 2>&1 &
-            rm -rf /home/ubuntu/pcy-server/tobe
+            sudo docker stop sss-project || true
+            sudo docker rm sss-project || true
+            sudo docker pull 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
+            sudo docker run -d --name sss-project -p 8080:8080 418272786110.dkr.ecr.ap-northeast-2.amazonaws.com/sss-project:latest
+
+      - name: 배포 완료 확인
+        run: echo "🚀 Deployment completed for feat/cicd/#3!"
