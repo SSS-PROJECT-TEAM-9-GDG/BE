@@ -1,5 +1,7 @@
 package com.example.gdg_project.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,9 +12,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/report")
+@Tag(name = "신고 도우미 API", description = "신고 관련 정보를 제공하는 API")
 public class ReportController {
 
     @GetMapping("/info/{type}")
+    @Operation(summary = "신고 정보 조회", description = "신고 유형에 따라 적절한 대응 절차를 반환합니다.")
     public ResponseEntity<Map<String, Object>> getReportInfo(@PathVariable String type) {
         Map<String, Object> response = new HashMap<>();
 
