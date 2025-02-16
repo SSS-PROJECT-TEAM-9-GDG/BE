@@ -26,3 +26,5 @@ springdoc:
   api:
     spam-check:
       key: ${API_KEY}
+    url-check:
+      key: ${VT_API_KEY:default_value}
