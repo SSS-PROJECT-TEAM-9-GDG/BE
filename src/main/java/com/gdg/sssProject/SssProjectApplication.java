@@ -1,13 +1,13 @@
-package com.example.gdg_project;
+package com.gdg.sssProject;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GdgProjectApplication {
+public class SssProjectApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GdgProjectApplication.class, args);
+		SpringApplication.run(SssProjectApplication.class, args);
 	}
 
 }
