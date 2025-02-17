@@ -3,15 +3,14 @@ name: Deploy To EC2
 on:
   push:
     branches:
-      - main
+      - main  # main 브랜치로 변경
   pull_request:
     branches:
-      - main
+      - main  # main 브랜치로 변경
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Github Repository 파일 불러오기
         uses: actions/checkout@v4
@@ -37,7 +36,7 @@ jobs:
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
 
-      - name: AWS Resource에 AWS credentials 설정
+      - name: AWS Resource에  AWS credentials 설정
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ap-northeast-2
@@ -57,7 +56,7 @@ jobs:
       - name: ECR에 Docker 이미지 Push하기
         run: docker push ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
 
-      - name: SSH로 EC2에 접속하여 application.yml 파일 복사
+      - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -65,10 +64,9 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            # EC2 서버의 정확한 경로에 application.yml 파일을 복사
-            echo "${{ secrets.APPLICATION_PROPERTIES }}" > /home/ubuntu/BE/src/main/resources/application.yml
+            # ECR 로그인 다시 시도
+            docker login -u AWS -p $(aws ecr get-login-password --region ap-northeast-2) ${{ steps.login-ecr.outputs.registry }}
 
-            # Docker 컨테이너 실행
             docker stop my-new-container || true
             docker rm my-new-container || true
             docker pull ${{ steps.login-ecr.outputs.registry }}/sss-project:latest
