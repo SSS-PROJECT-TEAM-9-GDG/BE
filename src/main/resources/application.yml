@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_JDBC_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://spring-sss.chisaqwye12g.ap-northeast-2.rds.amazonaws.com:3306/sss
+    username: jihoo
+    password: 12345678
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     database: mysql
@@ -15,6 +15,9 @@ spring:
         format_sql: false
         use_sql_comments: true
 
+server:
+  port: 8080  # 서버 포트 설정
+
 springdoc:
   api-docs:
     enabled: true
@@ -22,9 +25,11 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
 
   api:
     spam-check:
-      key: ${API_KEY}
+      key: c04a1e21d717e685bea77d03020630d8
     url-check:
-      key: ${VT_API_KEY:default_value}
+      key: 3523a1b3d3bd772baf3bd9db653d09f3b4c28959e73e535aaf9215233379abf0

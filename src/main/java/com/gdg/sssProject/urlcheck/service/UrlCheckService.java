@@ -4,8 +4,10 @@ import com.gdg.sssProject.urlcheck.dto.UrlCheckResponse;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -14,52 +16,55 @@ import java.util.Map;
 @Service
 public class UrlCheckService {
 
-    @Autowired
-    private Environment environment; // Spring 환경 변수 접근
-
-    @Value("${api.url-check.key:@null}")
+    @Value("${springdoc.api.url-check.key}")
     private String apiKey;
 
     private final WebClient webClient;
 
-    public UrlCheckService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://www.virustotal.com/api/v3/urls").build();
-    }
-
-    @PostConstruct
-    public void init() {
-        // 1. `@Value`로 가져온 값 확인
-        System.out.println("🛠️ API Key from @Value: " + apiKey);
-
-        // 2. `Environment`를 통해 직접 가져온 값 확인
-        String envApiKey = environment.getProperty("api.url-check.key");
-        System.out.println("🌍 API Key from Environment: " + envApiKey);
-
-        // 3. 환경 변수에서 직접 가져오기 (디버깅)
-        System.out.println("🔍 VT_API_KEY from System.getenv(): " + System.getenv("VT_API_KEY"));
+    public UrlCheckService(WebClient virusTotalWebClient) {
+        this.webClient = virusTotalWebClient;
     }
 
     public Mono<String> submitUrlForScan(String url) {
         return webClient.post()
+                .uri("/urls")
                 .header("x-apikey", apiKey)
-                .bodyValue(Map.of("url", url))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .body(BodyInserters.fromFormData("url", url)) // form-data 방식
                 .retrieve()
-                .bodyToMono(Map.class)
-                .map(response -> (String) ((Map<String, Object>) response.get("data")).get("id"));
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})  // ✅ 제네릭 타입 명확히 지정
+                .map(response -> {
+                    System.out.println("🔍 Response: " + response);
+                    var data = (Map<String, Object>) response.get("data");
+                    return (String) data.get("id");
+                });
     }
 
     public Mono<UrlCheckResponse> getUrlScanResult(String analysisId, String url) {
         return webClient.get()
-                .uri("https://www.virustotal.com/api/v3/urls/" + analysisId)
+                .uri("/analyses/" + analysisId)
                 .header("x-apikey", apiKey)
                 .retrieve()
                 .bodyToMono(Map.class)
                 .map(response -> {
-                    Map<String, Object> data = (Map<String, Object>) response.get("data");
-                    Map<String, Object> attributes = (Map<String, Object>) data.get("attributes");
-                    Map<String, Object> lastAnalysisStats = (Map<String, Object>) attributes.get("last_analysis_stats");
+                    System.out.println("🔍 Response: " + response);
 
-                    int maliciousCount = (int) lastAnalysisStats.get("malicious");
+                    var data = (Map<String, Object>) response.get("data");
+                    var attributes = (Map<String, Object>) data.get("attributes");
+                    if (attributes == null) {
+                        System.out.println("🚨 attributes가 null입니다!");
+                        return new UrlCheckResponse(url, false, 0);
+                    }
+                    // stats를 가져오기 전에 타입 체크
+                    Object statsObj = attributes.get("stats");
+                    Map<String, Object> stats = (statsObj instanceof Map) ? (Map<String, Object>) statsObj : null;
+
+                    if (stats == null) {
+                        System.out.println("🚨 stats가 null입니다! API 응답을 확인하세요.");
+                        return new UrlCheckResponse(url, false, 0);
+                    }
+
+                    int maliciousCount = (int) stats.getOrDefault("malicious", 0);
                     return new UrlCheckResponse(url, maliciousCount > 0, maliciousCount);
                 });
     }
