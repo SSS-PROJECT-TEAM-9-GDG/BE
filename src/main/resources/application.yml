@@ -25,4 +25,5 @@ springdoc:
 
 api:
   spam-check:
-    key: ${API_KEY}
+    key: c04a1e21d717e685bea77d03020630d8
+
