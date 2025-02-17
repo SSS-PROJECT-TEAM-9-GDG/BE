@@ -65,8 +65,8 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            # EC2 서버의 프로젝트 디렉토리에 application.yml 파일을 복사
-            echo "${{ secrets.APPLICATION_PROPERTIES }}" > /path/to/your/project/resources/application.yml
+            # EC2 서버의 정확한 경로에 application.yml 파일을 복사
+            echo "${{ secrets.APPLICATION_PROPERTIES }}" > /home/ubuntu/BE/src/main/resources/application.yml
 
             # Docker 컨테이너 실행
             docker stop my-new-container || true
