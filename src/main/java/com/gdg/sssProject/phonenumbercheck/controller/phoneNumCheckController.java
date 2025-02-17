@@ -8,16 +8,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.gdg.sssProject.phonenumbercheck.service.phoneNumCheckService;
+import com.gdg.sssProject.phonenumbercheck.service.PhoneNumCheckService;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/spam")
 @Tag(name = "phoneNumberCheck", description = "전화번호 체크하는 API입니다.")
-public class phoneNumCheckController {
+public class PhoneNumCheckController {
 
-    private final phoneNumCheckService phoneNumCheckService;
+    private final PhoneNumCheckService phoneNumCheckService;
 
     @PostMapping("/check")
     @Operation(summary = "전화번호 체크 API", description = "전화번호 체크 API입니다.")
