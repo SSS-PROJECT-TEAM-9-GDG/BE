@@ -7,6 +7,8 @@ build/
 
 # Ignore application.yml (contains sensitive data)
 src/main/resources/application.yml
+# Ignore application.properties (contains sensitive data)
+src/main/resources/application.properties
 
 ### STS ###
 .apt_generated
