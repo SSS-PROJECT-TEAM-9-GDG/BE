@@ -16,7 +16,7 @@ import java.util.Map;
 @Service
 public class UrlCheckService {
 
-    @Value("${springdoc.api.url-check.key}")
+    @Value("${url-check.key}")
     private String apiKey;
 
     private final WebClient webClient;
