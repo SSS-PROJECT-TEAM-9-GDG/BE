@@ -46,7 +46,7 @@ public class ReportController {
                 dfContact.add("✅ 방송민원 1번, 통신민원 2번, 디지털성범죄민원 3번");
                 response.put("contact", dfContact);
 
-                response.put("chatbot", "https://pf.kakao.com/_qxltUxb");
+                response.put("center", "https://pf.kakao.com/_qxltUxb");
                 break;
 
             case "voicephishing":
