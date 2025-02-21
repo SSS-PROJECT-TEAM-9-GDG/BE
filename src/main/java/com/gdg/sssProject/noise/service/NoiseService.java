@@ -12,7 +12,6 @@ import java.io.IOException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @Service
-@ConditionalOnProperty(name = "feature.no-db", havingValue = "true", matchIfMissing = false)
 public class NoiseService {
 
     //노이즈 추가를 위해 가우시안 함수 사용!
