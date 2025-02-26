@@ -2,6 +2,7 @@ package com.gdg.sssProject.noise.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import com.gdg.sssProject.noise.service.NoiseService;
 @RestController
 @RequestMapping("/api/noise")
 @Tag(name = "Noise Processing", description = "이미지에 노이즈를 추가하는 API입니다.")
+@Slf4j
 public class NoiseController {
 
     private final NoiseService noiseService;
@@ -24,6 +26,8 @@ public class NoiseController {
     public ResponseEntity<byte[]> applyNoise(
             @RequestParam("file") MultipartFile file,
             @RequestParam("level") String level) {
+        log.info("파일:-{}", file);
+        log.info("레벨:-{}", level);
 
         try {
             byte[] noisyImage = noiseService.applyGaussianNoise(file, level);
