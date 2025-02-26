@@ -24,7 +24,7 @@ public class UrlCheckService {
 
     public UrlCheckService() {
         this.webClient = WebClient.builder()
-                .baseUrl("https://www.virustotal.com/api/v3") 
+                .baseUrl("https://www.virustotal.com/api/v3")
                 .build();
     }
 
