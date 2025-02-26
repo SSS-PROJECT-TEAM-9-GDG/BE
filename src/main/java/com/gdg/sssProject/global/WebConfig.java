@@ -16,6 +16,7 @@
 //                .allowedMethods(
 //                        HttpMethod.GET.name(),
 //                        HttpMethod.HEAD.name(),
+
 //                        HttpMethod.POST.name(),
 //                        HttpMethod.PUT.name(),
 //                        HttpMethod.PATCH.name(),
