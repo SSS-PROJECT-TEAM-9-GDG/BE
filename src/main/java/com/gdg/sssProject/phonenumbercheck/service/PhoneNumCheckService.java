@@ -15,9 +15,9 @@ public class PhoneNumCheckService {
     @Value("${api.spam-check.key}")
     private String apiKey;
 
-    // WebClient를 서비스에서 직접 생성, baseUrl을 사용하지 않고 전체 URL 명시
+
     public PhoneNumCheckService() {
-        this.webClient = WebClient.builder().build(); // baseUrl 없이 기본 WebClient를 생성
+        this.webClient = WebClient.builder().build();
     }
 
     @Cacheable(value = "spamNumberCache", key = "#spamNumberRequest.number()")
