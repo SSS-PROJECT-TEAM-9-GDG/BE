@@ -9,14 +9,12 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @Service
 public class NoiseService {
 
-    //노이즈 추가를 위해 가우시안 함수 사용!
+    // 노이즈 추가를 위해 가우시안 함수 사용!
     public byte[] applyGaussianNoise(MultipartFile file, String level) {
-
         try {
             // MultipartFile → BufferedImage 변환
             BufferedImage inputImage = ImageIO.read(file.getInputStream());
@@ -63,8 +61,12 @@ public class NoiseService {
             ImageIO.write(outputImage, "jpg", baos);
 
             return baos.toByteArray();
+        } catch (IOException e) {
+            // IOException 처리: 파일 읽기 오류 등
+            throw new RuntimeException("이미지 파일을 읽는 도중 오류가 발생했습니다.", e);
         } catch (Exception e) {
-            throw new RuntimeException("이미지 처리 실패", e);
+            // 기타 오류 처리
+            throw new RuntimeException("이미지 처리 중 오류가 발생했습니다.", e);
         }
     }
 
@@ -90,4 +92,3 @@ public class NoiseService {
         return image;
     }
 }
-

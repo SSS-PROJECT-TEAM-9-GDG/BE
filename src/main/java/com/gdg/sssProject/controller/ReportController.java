@@ -20,7 +20,7 @@ public class ReportController {
         return "hello";
     }
 
-    
+
     @GetMapping("/info/{type}")
     @Operation(summary = "신고 정보 조회", description = "신고 유형에 따라 적절한 대응 절차를 반환합니다.")
     public ResponseEntity<Map<String, Object>> getReportInfo(@PathVariable("type") String type) {

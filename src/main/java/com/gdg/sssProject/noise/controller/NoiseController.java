@@ -38,6 +38,7 @@ public class NoiseController {
                     .body(noisyImage);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body(null);
         }
     }
