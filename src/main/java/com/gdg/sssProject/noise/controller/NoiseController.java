@@ -32,6 +32,7 @@ public class NoiseController {
             headers.setContentType(MediaType.IMAGE_JPEG);
             headers.setContentDispositionFormData("attachment", "noisy-image.jpg"); // 파일명 설정
 
+            
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(noisyImage);
