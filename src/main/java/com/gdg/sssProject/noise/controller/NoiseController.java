@@ -20,8 +20,7 @@ public class NoiseController {
         this.noiseService = noiseService;
     }
 
-    @PostMapping("/apply")
-    @Operation(summary = "이미지 노이즈 추가 및 다운로드", description = "사용자가 업로드한 이미지에 노이즈를 추가한 후 즉시 다운로드할 수 있는 API입니다.")
+    @PostMapping(value = "/apply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)    @Operation(summary = "이미지 노이즈 추가 및 다운로드", description = "사용자가 업로드한 이미지에 노이즈를 추가한 후 즉시 다운로드할 수 있는 API입니다.")
     public ResponseEntity<byte[]> applyNoise(
             @RequestParam("file") MultipartFile file,
             @RequestParam("level") String level) {
